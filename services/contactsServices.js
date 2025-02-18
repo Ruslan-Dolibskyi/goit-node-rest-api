@@ -1,13 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
 
-// Отримання __dirname у ES модулях
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const contactsPath = path.join("db", "contacts.json");
 
-// Шлях до файла contacts.json
-const contactsPath = path.join(__dirname, "db", "contacts.json");
-
-// Асинхронна функція для отримання списку всіх контактів
 async function listContacts() {
     try {
         const data = await fs.readFile(contactsPath, "utf8");
@@ -18,7 +13,6 @@ async function listContacts() {
     }
 }
 
-// Асинхронна функція для отримання контакту за ID
 async function getContactById(contactId) {
     try {
         const contacts = await listContacts();
@@ -29,7 +23,6 @@ async function getContactById(contactId) {
     }
 }
 
-// Асинхронна функція для додавання нового контакту
 async function addContact(name, email, phone) {
     try {
         const contacts = await listContacts();
@@ -48,7 +41,6 @@ async function addContact(name, email, phone) {
     }
 }
 
-// Асинхронна функція для видалення контакту
 async function removeContact(contactId) {
     try {
         const contacts = await listContacts();
@@ -63,4 +55,18 @@ async function removeContact(contactId) {
     }
 }
 
-export { listContacts, getContactById, addContact, removeContact };
+async function updateContact(id, updatedFields) {
+    const contacts = await listContacts();
+    const index = contacts.findIndex(contact => contact.id === id);
+
+    if (index === -1) {
+        return null;
+    }
+
+    contacts[index] = { ...contacts[index], ...updatedFields };
+    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+
+    return contacts[index];
+}
+
+export { listContacts, getContactById, addContact, removeContact, updateContact };
