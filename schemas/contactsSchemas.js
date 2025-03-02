@@ -12,8 +12,13 @@ export const updateContactSchema = Joi.object({
     email: Joi.string().email(),
     phone: Joi.string().pattern(/^\+?[0-9\- ]+$/),
     favorite: Joi.boolean(),
-}).min(1);
+}).min(1).messages({
+    "object.min": "Передайте хоча б одне поле для оновлення",
+});
 
 export const updateFavoriteSchema = Joi.object({
-    favorite: Joi.boolean().required(),
+    favorite: Joi.boolean().required().messages({
+        "any.required": "Поле 'favorite' є обов'язковим",
+        "boolean.base": "Поле 'favorite' повинно бути true або false",
+    }),
 });

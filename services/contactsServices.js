@@ -4,61 +4,57 @@ export async function listContacts() {
     try {
         return await Contact.findAll();
     } catch (error) {
-        console.error("Error fetching contacts:", error);
-        return null;
+        throw new Error("Помилка при отриманні списку контактів");
     }
 }
 
 export async function getContactById(contactId) {
     try {
-        return await Contact.findByPk(contactId);
+        const contact = await Contact.findByPk(contactId);
+        if (!contact) throw new Error("Контакт не знайдено");
+        return contact;
     } catch (error) {
-        console.error("Error fetching contact by ID:", error);
-        return null;
+        throw error;
     }
 }
 
-export async function addContact({ name, email, phone, favorite = false }) {
+export async function addContact({ name, email, phone, favorite = false, owner }) {
     try {
-        return await Contact.create({ name, email, phone, favorite });
+        return await Contact.create({ name, email, phone, favorite, owner });
     } catch (error) {
-        console.error("Error adding contact:", error);
-        return null;
+        throw new Error("Помилка при створенні контакту");
     }
 }
 
 export async function removeContact(contactId) {
     try {
         const contact = await Contact.findByPk(contactId);
-        if (!contact) return null;
+        if (!contact) throw new Error("Контакт не знайдено");
         await contact.destroy();
         return contact;
     } catch (error) {
-        console.error("Error removing contact:", error);
-        return null;
+        throw new Error("Помилка при видаленні контакту");
     }
 }
 
 export async function updateContact(contactId, updatedData) {
     try {
         const contact = await Contact.findByPk(contactId);
-        if (!contact) return null;
+        if (!contact) throw new Error("Контакт не знайдено");
         await contact.update(updatedData);
         return contact;
     } catch (error) {
-        console.error("Error updating contact:", error);
-        return null;
+        throw new Error("Помилка при оновленні контакту");
     }
 }
 
 export async function updateStatusContact(contactId, { favorite }) {
     try {
         const contact = await Contact.findByPk(contactId);
-        if (!contact) return null;
+        if (!contact) throw new Error("Контакт не знайдено");
         await contact.update({ favorite });
         return contact;
     } catch (error) {
-        console.error("Error updating contact status:", error);
-        return null;
+        throw new Error("Помилка при оновленні статусу контакту");
     }
 }

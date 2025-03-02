@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../Sequelize.js";
-
+import User from "./user.js";
 
 export const Contact = sequelize.define("Contact", {
     name: {
@@ -21,6 +21,15 @@ export const Contact = sequelize.define("Contact", {
     favorite: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
+    },
+    owner: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: "users",
+            key: "id",
+        },
+        onDelete: "CASCADE",
     },
 }, {
     tableName: "contacts",
