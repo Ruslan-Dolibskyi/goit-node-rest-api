@@ -23,6 +23,10 @@ const User = sequelize.define("User", {
         type: DataTypes.STRING,
         defaultValue: null,
     },
+    avatarURL: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
 }, {
     tableName: "users",
     timestamps: false,
@@ -30,4 +34,4 @@ const User = sequelize.define("User", {
 
 export default User;
 
-// User.sync();
+// User.sync({ alter: true });

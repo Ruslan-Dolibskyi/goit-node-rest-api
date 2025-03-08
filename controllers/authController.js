@@ -1,9 +1,13 @@
+import fs from "fs/promises";
+import path from "path";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
 import User from "../db/models/user.js";
 import { registerSchema, loginSchema } from "../schemas/authSchemas.js";
 
 const SECRET_KEY = process.env.JWT_SECRET || "fallback_secret_key";
+const avatarsDir = path.resolve("public/avatars");
 
 export const registerUser = async (req, res) => {
     try {
@@ -19,17 +23,21 @@ export const registerUser = async (req, res) => {
             return res.status(409).json({ message: "Email in use" });
         }
 
+        const avatarURL = gravatar.url(email, { s: "250", d: "retro" }, true);
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await User.create({
             email,
             password: hashedPassword,
+            avatarURL,
         });
 
         res.status(201).json({
             user: {
                 email: newUser.email,
                 subscription: newUser.subscription,
+                avatarURL: newUser.avatarURL,
             },
         });
     } catch (err) {
@@ -66,6 +74,7 @@ export const loginUser = async (req, res) => {
             user: {
                 email: user.email,
                 subscription: user.subscription,
+                avatarURL: user.avatarURL,
             },
         });
     } catch (err) {
@@ -88,13 +97,36 @@ export const logoutUser = async (req, res) => {
 
 export const getCurrentUser = async (req, res) => {
     try {
-        const { email, subscription } = req.user;
+        const { email, subscription, avatarURL } = req.user;
 
         res.status(200).json({
             email,
-            subscription
+            subscription,
+            avatarURL,
         });
     } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+export const updateAvatar = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "Будь ласка, завантажте файл" });
+        }
+
+        const { path: tempPath, filename } = req.file;
+        const newFileName = `${req.user.id}${path.extname(filename)}`;
+        const newPath = path.join(avatarsDir, newFileName);
+
+        await fs.rename(tempPath, newPath);
+
+        const avatarURL = `/avatars/${newFileName}`;
+        req.user.avatarURL = avatarURL;
+        await req.user.save();
+
+        res.status(200).json({ avatarURL });
+    } catch (error) {
         res.status(500).json({ message: "Server error" });
     }
 };
