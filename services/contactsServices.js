@@ -1,16 +1,16 @@
 import { Contact } from "../db/models/contact.js";
 
-export async function listContacts() {
+export async function listContacts(ownerId) {
     try {
-        return await Contact.findAll();
+        return await Contact.findAll({ where: { owner: ownerId } });
     } catch (error) {
         throw new Error("Помилка при отриманні списку контактів");
     }
 }
 
-export async function getContactById(contactId) {
+export async function getContactById(contactId, ownerId) {
     try {
-        const contact = await Contact.findByPk(contactId);
+        const contact = await Contact.findOne({ where: { id: contactId, owner: ownerId } });
         if (!contact) throw new Error("Контакт не знайдено");
         return contact;
     } catch (error) {
@@ -26,9 +26,9 @@ export async function addContact({ name, email, phone, favorite = false, owner }
     }
 }
 
-export async function removeContact(contactId) {
+export async function removeContact(contactId, ownerId) {
     try {
-        const contact = await Contact.findByPk(contactId);
+        const contact = await Contact.findOne({ where: { id: contactId, owner: ownerId } });
         if (!contact) throw new Error("Контакт не знайдено");
         await contact.destroy();
         return contact;
@@ -37,9 +37,9 @@ export async function removeContact(contactId) {
     }
 }
 
-export async function updateContact(contactId, updatedData) {
+export async function updateContact(contactId, updatedData, ownerId) {
     try {
-        const contact = await Contact.findByPk(contactId);
+        const contact = await Contact.findOne({ where: { id: contactId, owner: ownerId } });
         if (!contact) throw new Error("Контакт не знайдено");
         await contact.update(updatedData);
         return contact;
@@ -48,9 +48,9 @@ export async function updateContact(contactId, updatedData) {
     }
 }
 
-export async function updateStatusContact(contactId, { favorite }) {
+export async function updateStatusContact(contactId, { favorite }, ownerId) {
     try {
-        const contact = await Contact.findByPk(contactId);
+        const contact = await Contact.findOne({ where: { id: contactId, owner: ownerId } });
         if (!contact) throw new Error("Контакт не знайдено");
         await contact.update({ favorite });
         return contact;
